@@ -16,6 +16,7 @@ class Display(QWidget):
 
 		self.setWindowTitle("Perudo Online")
 		self.menu_layout = self.create_menu_layout()
+		#self.menu_layout = self.create_other_player_layout("North")
 		self.setLayout(self.menu_layout)
 
 		# We have to keep a reference to `Client` as it is a QThread
@@ -33,7 +34,7 @@ class Display(QWidget):
 		quit_button = QPushButton("Quit")
 		menu_layout.addWidget(quit_button)
 
-		#start_button.clicked.connect()
+		start_button.clicked.connect(self.start_game)
 		quit_button.clicked.connect(self.quit)
 
 		return menu_layout
@@ -45,7 +46,6 @@ class Display(QWidget):
 		# Creates a dice mat, a cup, a name label and the place to write what
 		# bids the player made
 		layout = QVBoxLayout()
-
 		player_name = QLabel(name)
 
 		scroll = QScrollArea()
@@ -56,13 +56,16 @@ class Display(QWidget):
 
 		scroll.setWidget(inner)  # CRITICAL
 
-		for i in range(40):
-			b = QPushButton(inner)
-			b.setText(str(i))
-			inner.layout().addWidget(b)
+		for i in range(50):
+			inner.layout().addWidget(QLabel(f"{i} threes"))
 
-		return scroll
+		layout.addWidget(player_name)
+		layout.addWidget(scroll)
+		return layout
 
+	def start_game(self):
+		print("Starting with new layout")
+		self.setLayout(self.create_other_player_layout("North"))
 
 	def set_up(self):
 		print("Creating window...")

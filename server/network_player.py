@@ -21,7 +21,7 @@ class NetworkPlayer(ProtocolObject):
 		# Called before player is assigned a lobby
 		init = self.get_command()
 		if init == "1":
-			time.sleep(5)
+			time.sleep(1)
 			self.send_command("9")
 			return True
 		else:

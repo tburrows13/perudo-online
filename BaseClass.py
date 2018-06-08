@@ -5,8 +5,6 @@ class ProtocolObject:
 	def __init__(self, conn, timeout=False):
 		self.buffer = ""
 		self.conn = conn
-		#if timeout:
-		#self.conn.settimeout(0)
 
 	def get_command(self):
 		# Set command length to 2 which is default
