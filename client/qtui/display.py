@@ -3,9 +3,9 @@ import sys
 import time
 
 from PyQt5.QtWidgets import QPushButton, QApplication, QLabel, QVBoxLayout, \
-	QWidget, QGridLayout, QGroupBox, QScrollArea, QFrame
+	QWidget, QGridLayout, QGroupBox, QScrollArea, QFrame, QStackedLayout
 from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QObjectCleanupHandler
 
 from client.client import Client
 
@@ -16,8 +16,12 @@ class Display(QWidget):
 
 		self.setWindowTitle("Perudo Online")
 		self.menu_layout = self.create_menu_layout()
-		#self.menu_layout = self.create_other_player_layout("North")
-		self.setLayout(self.menu_layout)
+		self.game_layout = self.create_other_player_layout("North")
+		stacked_layout = QStackedLayout(self)
+		stacked_layout.addWidget(self.menu_layout)
+		stacked_layout.addWidget(self.game_layout)
+
+		self.setLayout(stacked_layout)
 
 		# We have to keep a reference to `Client` as it is a QThread
 		self.client = Client()
@@ -36,8 +40,9 @@ class Display(QWidget):
 
 		start_button.clicked.connect(self.start_game)
 		quit_button.clicked.connect(self.quit)
-
-		return menu_layout
+		frame = QFrame()
+		frame.setLayout(menu_layout)
+		return frame
 
 	def create_play_layout(self, player_names):
 		play_layout = QGridLayout
@@ -49,6 +54,7 @@ class Display(QWidget):
 		player_name = QLabel(name)
 
 		scroll = QScrollArea()
+		scroll.setMaximumHeight(90)
 		scroll.setWidgetResizable(True)  # CRITICAL
 
 		inner = QFrame(scroll)
@@ -61,11 +67,14 @@ class Display(QWidget):
 
 		layout.addWidget(player_name)
 		layout.addWidget(scroll)
-		return layout
+
+		frame = QFrame()
+		frame.setLayout(layout)
+		return frame
 
 	def start_game(self):
 		print("Starting with new layout")
-		self.setLayout(self.create_other_player_layout("North"))
+		self.layout().setCurrentIndex(1)
 
 	def set_up(self):
 		print("Creating window...")
