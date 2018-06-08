@@ -3,7 +3,8 @@ import sys
 import time
 
 from PyQt5.QtWidgets import QPushButton, QApplication, QLabel, QVBoxLayout, \
-	QWidget, QGridLayout, QGroupBox, QScrollArea, QFrame, QStackedLayout
+	QWidget, QGridLayout, QGroupBox, QScrollArea, QFrame, QStackedLayout, \
+	QLineEdit
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt, QObjectCleanupHandler
 
@@ -16,9 +17,11 @@ class Display(QWidget):
 
 		self.setWindowTitle("Perudo Online")
 		self.menu_layout = self.create_menu_layout()
+		self.name_layout = self.create_insert_name_layout()
 		self.game_layout = self.create_other_player_layout("North")
 		stacked_layout = QStackedLayout(self)
 		stacked_layout.addWidget(self.menu_layout)
+		stacked_layout.addWidget(self.name_layout)
 		stacked_layout.addWidget(self.game_layout)
 
 		self.setLayout(stacked_layout)
@@ -33,15 +36,32 @@ class Display(QWidget):
 
 		self.connection_status = QLabel("No Connection")
 		menu_layout.addWidget(self.connection_status)
-		start_button = QPushButton("New Game")
-		menu_layout.addWidget(start_button)
+		self.start_button = QPushButton("New Game")
+		menu_layout.addWidget(self.start_button)
 		quit_button = QPushButton("Quit")
 		menu_layout.addWidget(quit_button)
 
-		start_button.clicked.connect(self.start_game)
+		self.start_button.setEnabled(False)
+		self.start_button.clicked.connect(self.start_game)
 		quit_button.clicked.connect(self.quit)
 		frame = QFrame()
 		frame.setLayout(menu_layout)
+		return frame
+
+	def create_insert_name_layout(self):
+		layout = QVBoxLayout()
+
+		text = QLabel("Enter your name:")
+		layout.addWidget(text)
+		self.name_input = QLineEdit()
+		layout.addWidget(self.name_input)
+		enter_button = QPushButton("Enter")
+		layout.addWidget(enter_button)
+
+		enter_button.clicked.connect(self.enter_name)
+
+		frame = QFrame()
+		frame.setLayout(layout)
 		return frame
 
 	def create_play_layout(self, player_names):
@@ -72,8 +92,11 @@ class Display(QWidget):
 		frame.setLayout(layout)
 		return frame
 
+	def enter_name(self):
+		print(f"Starting game with name {self.name_input.text()}")
+		self.layout().setCurrentIndex(2)
+
 	def start_game(self):
-		print("Starting with new layout")
 		self.layout().setCurrentIndex(1)
 
 	def set_up(self):
@@ -90,9 +113,12 @@ class Display(QWidget):
 		if self.connected:
 			print("We have a connection, can click on [Start Game] now")
 			self.connection_status.setText("Connected")
+			self.start_button.setEnabled(True)
+
 		else:
 			print("We have lost connection")
 			self.connection_status.setText("No Connection")
+			self.start_button.setEnabled(False)
 
 
 	def get_menu_input(self):
