@@ -2,9 +2,8 @@ debug = True
 
 
 class ProtocolObject:
-	def __init__(self, conn, timeout=False):
+	def __init__(self, timeout=False):
 		self.buffer = ""
-		self.conn = conn
 
 	def get_command(self):
 		# Set command length to 2 which is default

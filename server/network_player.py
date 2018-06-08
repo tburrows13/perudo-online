@@ -7,7 +7,8 @@ from BaseClass import ProtocolObject
 class NetworkPlayer(ProtocolObject):
 	def __init__(self, conn, addr):
 		# Assigns self.buffer and self.conn
-		super().__init__(conn, True)
+		super().__init__()
+		self.conn = conn
 		self.ip_address = addr[0]
 		self.port = addr[1]
 

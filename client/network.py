@@ -8,9 +8,7 @@ from settings import server_ip, server_port
 
 class Networker(ProtocolObject):
 	def __init__(self):
-		conn = socket.socket()
-
-		super().__init__(conn, timeout=True)
+		super().__init__()
 		self.connected = False
 
 	def quit(self):
@@ -20,6 +18,7 @@ class Networker(ProtocolObject):
 		# Send initial message
 		print("Trying to connect")
 		try:
+			self.conn = socket.socket()
 			self.conn.connect((server_ip, server_port))
 			self.conn.settimeout(0)
 			self.send_command("1")
