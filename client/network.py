@@ -9,7 +9,6 @@ from settings import server_ip, server_port
 class Networker(ProtocolObject):
 	def __init__(self):
 		conn = socket.socket()
-		conn.connect((server_ip, server_port))
 
 		super().__init__(conn, timeout=True)
 		self.connected = False
@@ -19,7 +18,17 @@ class Networker(ProtocolObject):
 
 	def init_connection(self):
 		# Send initial message
-		self.send_command("1")
+		print("Trying to connect")
+		try:
+			self.conn.connect((server_ip, server_port))
+			self.conn.settimeout(0)
+			self.send_command("1")
+		except (ConnectionError, ConnectionRefusedError,):
+			print("Received connection error in init_connection")
+		else:
+			# We were able to connect
+			return True
+		return False
 
 	def check_connection(self):
 		# Check for received connection
@@ -33,7 +42,7 @@ class Networker(ProtocolObject):
 			return True
 
 		elif command:
-			# TODO
+			# TODO command was not what was expected
 			raise ConnectionAbortedError
 
 		else:

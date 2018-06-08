@@ -1,7 +1,9 @@
 from random import random, choice
 import sys
+import time
+
 from PyQt5.QtWidgets import QPushButton, QApplication, QLabel, QVBoxLayout, \
-	QWidget, QGridLayout, QGroupBox
+	QWidget, QGridLayout, QGroupBox, QScrollArea, QFrame
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt
 
@@ -21,7 +23,6 @@ class Display(QWidget):
 		self.client.start()
 		self.client.connection_made.connect(self.update_connection_status)
 
-
 	def create_menu_layout(self):
 		menu_layout = QVBoxLayout()
 
@@ -36,6 +37,32 @@ class Display(QWidget):
 		quit_button.clicked.connect(self.quit)
 
 		return menu_layout
+
+	def create_play_layout(self, player_names):
+		play_layout = QGridLayout
+
+	def create_other_player_layout(self, name):
+		# Creates a dice mat, a cup, a name label and the place to write what
+		# bids the player made
+		layout = QVBoxLayout()
+
+		player_name = QLabel(name)
+
+		scroll = QScrollArea()
+		scroll.setWidgetResizable(True)  # CRITICAL
+
+		inner = QFrame(scroll)
+		inner.setLayout(QVBoxLayout())
+
+		scroll.setWidget(inner)  # CRITICAL
+
+		for i in range(40):
+			b = QPushButton(inner)
+			b.setText(str(i))
+			inner.layout().addWidget(b)
+
+		return scroll
+
 
 	def set_up(self):
 		print("Creating window...")

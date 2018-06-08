@@ -20,11 +20,13 @@ class Client(QThread):
 
 		self.display.set_up()
 
-		self.networker.init_connection()
-
 		self.connected = False
 		while not self.connected:
-			self.connected = self.networker.check_connection()
+			self.connected = self.networker.init_connection()
+
+		self.connected_cf = False
+		while not self.connected_cf:
+			self.connected_cf = self.networker.check_connection()
 
 		self.connection_made.emit(True)
 

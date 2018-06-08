@@ -5,8 +5,8 @@ class ProtocolObject:
 	def __init__(self, conn, timeout=False):
 		self.buffer = ""
 		self.conn = conn
-		if timeout:
-			self.conn.settimeout(0)
+		#if timeout:
+		#self.conn.settimeout(0)
 
 	def get_command(self):
 		# Set command length to 2 which is default
@@ -18,7 +18,7 @@ class ProtocolObject:
 					# then we have received an invalid command
 					print("Unexpected command received...")
 					print("Closing connection...")
-					return ""
+					raise ConnectionAbortedError
 
 				if self.buffer[0] == "#":
 					# We have a variable length buffer, so we need to get the
