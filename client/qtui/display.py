@@ -4,11 +4,13 @@ import time
 
 from PyQt5.QtWidgets import QPushButton, QApplication, QLabel, QVBoxLayout, \
 	QWidget, QGridLayout, QGroupBox, QScrollArea, QFrame, QStackedLayout, \
-	QLineEdit
+	QLineEdit, QHBoxLayout
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt, QObjectCleanupHandler
 
 from client.client import Client
+
+from settings import MAX_PLAYERS
 
 
 class Display(QWidget):
@@ -16,20 +18,25 @@ class Display(QWidget):
 		super(Display, self).__init__(parent)
 
 		self.setWindowTitle("Perudo Online")
+
+		# We have to keep a reference to `Client` as it is a QThread
+		self.client = Client()
+		self.client.connection_made.connect(self.update_connection_status)
+		self.client.name_allowed.connect(self.confirm_name_allowed)
+
 		self.menu_layout = self.create_menu_layout()
-		self.name_layout = self.create_insert_name_layout()
+		self.name_layout = self.create_enter_name_layout()
+		self.lobby_layout = self.create_lobby_layout()
 		self.game_layout = self.create_other_player_layout("North")
 		stacked_layout = QStackedLayout(self)
 		stacked_layout.addWidget(self.menu_layout)
 		stacked_layout.addWidget(self.name_layout)
+		stacked_layout.addWidget(self.lobby_layout)
 		stacked_layout.addWidget(self.game_layout)
 
 		self.setLayout(stacked_layout)
 
-		# We have to keep a reference to `Client` as it is a QThread
-		self.client = Client()
 		self.client.start()
-		self.client.connection_made.connect(self.update_connection_status)
 
 	def create_menu_layout(self):
 		menu_layout = QVBoxLayout()
@@ -48,21 +55,55 @@ class Display(QWidget):
 		frame.setLayout(menu_layout)
 		return frame
 
-	def create_insert_name_layout(self):
+	def create_enter_name_layout(self):
 		layout = QVBoxLayout()
 
 		text = QLabel("Enter your name:")
 		layout.addWidget(text)
 		self.name_input = QLineEdit()
 		layout.addWidget(self.name_input)
-		enter_button = QPushButton("Enter")
-		layout.addWidget(enter_button)
+		self.name_enter_button = QPushButton("Enter")
+		layout.addWidget(self.name_enter_button)
+		self.name_allowed_label = QLabel()
+		layout.addWidget(self.name_allowed_label)
 
-		enter_button.clicked.connect(self.enter_name)
+		self.name_enter_button.clicked.connect(self.enter_name)
 
 		frame = QFrame()
 		frame.setLayout(layout)
 		return frame
+
+	def create_lobby_layout(self):
+		# Name lobby id and time left on left, all players on right
+		layout = QHBoxLayout()
+
+		# Left
+		left_layout = QVBoxLayout()
+		self.name_label = QLabel("")
+		left_layout.addWidget(self.name_label)
+		lobby_id_label = QLabel("1lsfkj289afs")  # TODO implement real lobby id
+		left_layout.addWidget(lobby_id_label)
+		self.time_left_id = QLabel("Time Left: 30")
+		left_layout.addWidget(self.time_left_id)
+
+		layout.addLayout(left_layout)
+
+		# Right
+		right_frame = QFrame()
+		right_layout = QVBoxLayout()
+		names = []
+		for i in range(MAX_PLAYERS):
+			names.append("")
+			right_layout.addWidget(QLabel("asdfghj"))
+		right_frame.setLayout(right_layout)
+		# TODO add frame
+
+		layout.addWidget(right_frame)
+
+		frame = QFrame()
+		frame.setLayout(layout)
+		return frame
+
 
 	def create_play_layout(self, player_names):
 		play_layout = QGridLayout
@@ -94,7 +135,17 @@ class Display(QWidget):
 
 	def enter_name(self):
 		print(f"Starting game with name {self.name_input.text()}")
-		self.layout().setCurrentIndex(2)
+		self.name_enter_button.setDisabled(True)
+		self.client.set_nickname(self.name_input.text())
+
+	def confirm_name_allowed(self, name_valid):
+		if name_valid:
+			self.name_label.setText(self.client.nickname)
+			self.layout().setCurrentIndex(2)
+			self.name_allowed_label.setText("")
+		else:
+			self.name_allowed_label.setText("Name already taken")
+		self.name_enter_button.setEnabled(True)
 
 	def start_game(self):
 		self.layout().setCurrentIndex(1)

@@ -1,3 +1,5 @@
+import time
+
 from client.network import Networker
 from client.dummy_display import Display
 from client.game import Game
@@ -7,18 +9,19 @@ from PyQt5.QtCore import QThread, pyqtSignal
 class Client(QThread):
 	# Define signals
 	connection_made = pyqtSignal(bool)
+	name_allowed = pyqtSignal(bool)
 
 	def __init__(self):
 		super(Client, self).__init__()
 		print("Client initialised")
+		self.nickname = None
 
 	def run(self):
 		print("Client running")
 		self.display = Display()
 		self.networker = Networker()
 		self.game = Game()
-
-		self.display.set_up()
+		#self.display.set_up()
 
 		self.connected = False
 		while not self.connected:
@@ -41,8 +44,11 @@ class Client(QThread):
 				started = True
 
 		# We are now looking for a lobby
-		self.nickname = self.display.get_name()
-		self.display.load_lobby()
+		while self.nickname is None:
+			# Will be update by the display
+			pass
+
+		print("Found nickname {}".format(self.nickname))
 		self.networker.join_lobby(self.nickname)
 
 		name_allowed = False
@@ -52,15 +58,18 @@ class Client(QThread):
 				allowed = self.networker.check_name_allowed()
 				if allowed is False:  # As opposed to allowed is None
 					recheck = True
-					self.display.ask_for_new_name()
+					self.name_allowed.emit(False)
 				elif allowed:
 					name_allowed = True
+					self.name_allowed.emit(True)
 			else:
-				self.nickname = self.display.get_new_name()
-				if self.nickname:
-					self.networker.join_lobby(self.nickname)
-					recheck = False
+				self.nickname = None
+				while self.nickname is None:
+					pass
+				self.networker.join_lobby(self.nickname)
+				recheck = False
 
+		# We have an allowed name now
 		joined_lobby = False
 		while not joined_lobby:
 			joined, other_names = self.networker.check_join_lobby()
@@ -105,3 +114,6 @@ class Client(QThread):
 			return True
 		else:
 			return False
+
+	def set_nickname(self, name):
+		self.nickname = name
