@@ -71,9 +71,9 @@ class Networker(ProtocolObject):
 			raise ConnectionError
 		elif command:
 			dic = json.loads(command)
-			return True, dic["names"]
+			return True, dic["names"], dic["id"]
 		else:
-			return False, None
+			return False, None, None
 
 	def lobby_update(self):
 		command = self.get_command()

@@ -22,7 +22,6 @@ class NetworkPlayer(ProtocolObject):
 		# Called before player is assigned a lobby
 		init = self.get_command()
 		if init == "1":
-			time.sleep(1)
 			self.send_command("9")
 			return True
 		else:
@@ -51,9 +50,9 @@ class NetworkPlayer(ProtocolObject):
 		to_send = json.dumps({"cf": False})
 		self.send_command(to_send)
 
-	def send_names(self, names):
+	def send_names(self, names, lobby_id):
 		# Called once after a player has been added to a lobby
-		to_send = json.dumps({"names": names}, separators=(',', ':'))
+		to_send = json.dumps({"names": names, "id": lobby_id}, separators=(',', ':'))
 		self.send_command(to_send)
 
 	def update(self, time_left, no_of_players, new_players, lost_players, started):

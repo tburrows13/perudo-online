@@ -26,13 +26,12 @@ class Display(QWidget):
 
 		self.menu_layout = self.create_menu_layout()
 		self.name_layout = self.create_enter_name_layout()
-		self.lobby_layout = self.create_lobby_layout()
-		self.game_layout = self.create_other_player_layout("North")
+		#self.game_layout = self.create_other_player_layout("North")
 		stacked_layout = QStackedLayout(self)
 		stacked_layout.addWidget(self.menu_layout)
 		stacked_layout.addWidget(self.name_layout)
-		stacked_layout.addWidget(self.lobby_layout)
-		stacked_layout.addWidget(self.game_layout)
+		#stacked_layout.addWidget(self.lobby_layout)
+		#stacked_layout.addWidget(self.game_layout)
 
 		self.setLayout(stacked_layout)
 
@@ -73,15 +72,15 @@ class Display(QWidget):
 		frame.setLayout(layout)
 		return frame
 
-	def create_lobby_layout(self):
+	def create_lobby_layout(self, name, lobby_id):
 		# Name lobby id and time left on left, all players on right
 		layout = QHBoxLayout()
 
 		# Left
 		left_layout = QVBoxLayout()
-		self.name_label = QLabel("")
+		self.name_label = QLabel(name)
 		left_layout.addWidget(self.name_label)
-		lobby_id_label = QLabel("1lsfkj289afs")  # TODO implement real lobby id
+		lobby_id_label = QLabel(lobby_id)
 		left_layout.addWidget(lobby_id_label)
 		self.time_left_id = QLabel("Time Left: 30")
 		left_layout.addWidget(self.time_left_id)
@@ -140,7 +139,12 @@ class Display(QWidget):
 
 	def confirm_name_allowed(self, name_valid):
 		if name_valid:
-			self.name_label.setText(self.client.nickname)
+			while self.client.lobby_id is None:
+				# TODO implement loading screen here?
+				# Add names directly?
+				pass
+			self.lobby_layout = self.create_lobby_layout(self.client.nickname, self.client.lobby_id)
+			self.layout().addWidget(self.lobby_layout)
 			self.layout().setCurrentIndex(2)
 			self.name_allowed_label.setText("")
 		else:
@@ -158,6 +162,7 @@ class Display(QWidget):
 
 	def quit(self):
 		print("Closing window...")
+		QApplication.quit()
 
 	def update_connection_status(self, status):
 		self.connected = status

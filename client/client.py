@@ -33,16 +33,6 @@ class Client(QThread):
 
 		self.connection_made.emit(True)
 
-		started = False
-		while not started:
-			inp = self.display.get_menu_input()
-			if inp == "quit":
-				self.display.quit()
-				self.networker.quit()
-				return
-			elif inp == "start":
-				started = True
-
 		# We are now looking for a lobby
 		while self.nickname is None:
 			# Will be update by the display
@@ -72,7 +62,7 @@ class Client(QThread):
 		# We have an allowed name now
 		joined_lobby = False
 		while not joined_lobby:
-			joined, other_names = self.networker.check_join_lobby()
+			joined, other_names, self.lobby_id = self.networker.check_join_lobby()
 			if joined:
 				joined_lobby = True
 
@@ -117,3 +107,7 @@ class Client(QThread):
 
 	def set_nickname(self, name):
 		self.nickname = name
+
+	def quit(self):
+		self.display.quit()
+		self.networker.quit()

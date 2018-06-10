@@ -11,8 +11,9 @@ print("Listening on port " + str(server_port))
 
 
 class Server:
-	def __init__(self, player_queue, info_queue):
-		lobby = Lobby(player_queue, info_queue)
+	def __init__(self, player_queue, info_queue, server_id):
+		lobby = Lobby(player_queue, info_queue, server_id)
+		self.server_id = server_id
 		self.players = lobby.wait()
 		# shuffle order?
 		player_names = []
@@ -106,6 +107,7 @@ def manage_lobbies(player_in_queue):
 	them in lobbies
 	"""
 	lobby = False
+	lobby_id = 651
 	lobby_info = Queue()
 	unvalidated_players = []
 	unnamed_players = []
@@ -145,14 +147,16 @@ def manage_lobbies(player_in_queue):
 					if not lobby:
 						# Create lobby
 						player_out_queue = Queue()
-						t = Thread(target=create_server, args=(player_out_queue, lobby_info))
+						new_lobby_id = str(lobby_id).zfill(6)
+						t = Thread(target=create_server, args=(player_out_queue, lobby_info, new_lobby_id))
 						t.start()
+						lobby_id += 1
 						lobby = True
 					player_out_queue.put(unnamed_players.pop(i))
 
 
-def create_server(q,info_q):
-	_ = Server(q, info_q)
+def create_server(q, info_q, server_id):
+	_ = Server(q, info_q, server_id)
 
 
 def start_server():

@@ -1,5 +1,7 @@
 from time import sleep, time
 
+from settings import MAX_PLAYERS
+
 
 def sleepn(t):
     if t < 0:
@@ -8,21 +10,21 @@ def sleepn(t):
 
 
 class Lobby:
-    def __init__(self, player_queue, lobby_queue):
+    def __init__(self, player_queue, lobby_queue, lobby_id):
         self.queue = player_queue
         self.info_queue = lobby_queue
+        self.lobby_id = lobby_id
 
         self.players = []
         self.new_players = []  # List containing strings
         self.lost_players = []  # ''
         self.player_names = []
-        self.max_players = 3
         self.time_to_start = 30
-        self.update_frequency = 1  # How often it notifies the players of info
+        self.update_frequency = 5  # How often it notifies the players of info
 
     def wait(self):
         start = time()
-        while len(self.players) < self.max_players and self.time_to_start > 0:
+        while len(self.players) < MAX_PLAYERS and self.time_to_start > 0:
             self.check_new_players()
 
             for player in self.players:
@@ -62,7 +64,7 @@ class Lobby:
         while not self.queue.empty():
             new_player = self.queue.get()
             print("Player joined: " + new_player.nickname)
-            new_player.send_names(self.player_names)
+            new_player.send_names(self.player_names, self.lobby_id)
             self.new_players.append(new_player.nickname)
             self.player_names.append(new_player.nickname)
             self.players.append(new_player)
