@@ -23,6 +23,8 @@ class Display(QWidget):
 		self.client = Client()
 		self.client.connection_made.connect(self.update_connection_status)
 		self.client.name_allowed.connect(self.confirm_name_allowed)
+		self.client.lobby_joined.connect(self.populate_lobby_layout)
+		self.client.lobby_update_info.connect(self.update_lobby_layout)
 
 		self.menu_layout = self.create_menu_layout()
 		self.name_layout = self.create_enter_name_layout()
@@ -72,36 +74,52 @@ class Display(QWidget):
 		frame.setLayout(layout)
 		return frame
 
-	def create_lobby_layout(self, name, lobby_id):
+	def create_lobby_layout(self):
+		print("Creating lobby layout")
 		# Name lobby id and time left on left, all players on right
 		layout = QHBoxLayout()
 
 		# Left
 		left_layout = QVBoxLayout()
-		self.name_label = QLabel(name)
-		left_layout.addWidget(self.name_label)
-		lobby_id_label = QLabel(lobby_id)
-		left_layout.addWidget(lobby_id_label)
-		self.time_left_id = QLabel("Time Left: 30")
-		left_layout.addWidget(self.time_left_id)
+		name_label = QLabel("-")
+		left_layout.addWidget(name_label)
+		self.lobby_id_label = QLabel("-")
+		left_layout.addWidget(self.lobby_id_label)
+		self.time_left = QLabel("Time Left: -")
+		left_layout.addWidget(self.time_left)
 
 		layout.addLayout(left_layout)
 
 		# Right
 		right_frame = QFrame()
-		right_layout = QVBoxLayout()
-		names = []
+		self.names_list_layout = QVBoxLayout()
+		self.name_labels = []
 		for i in range(MAX_PLAYERS):
-			names.append("")
-			right_layout.addWidget(QLabel("asdfghj"))
-		right_frame.setLayout(right_layout)
-		# TODO add frame
+			label = QLabel("[placeholder]")
+			self.name_labels.append(label)
+			self.names_list_layout.addWidget(label)
+		right_frame.setLayout(self.names_list_layout)
 
 		layout.addWidget(right_frame)
 
 		frame = QFrame()
 		frame.setLayout(layout)
 		return frame
+
+	def populate_lobby_layout(self, lobby_id, initial_names):
+		# Called once when the initial lobby data is sent from the server
+		self.lobby_id_label.setText(lobby_id)
+
+	def update_lobby_layout(self, time_left, name_list):
+		# Called each time an update is received from the server
+		print(f"Updating lobby layout {time_left}, {name_list}")
+		##self.time_left_id.setText(f"Time Left: {time_left}")
+		new_name_labels = []
+		for i in range(len(self.name_labels)):
+			label = QLabel(name_list[i])
+			new_name_labels.append(label)
+			self.names_list_layout.replaceWidget(self.name_labels[i], new_name_labels[i])
+		self.name_labels = new_name_labels
 
 
 	def create_play_layout(self, player_names):
@@ -139,11 +157,7 @@ class Display(QWidget):
 
 	def confirm_name_allowed(self, name_valid):
 		if name_valid:
-			while self.client.lobby_id is None:
-				# TODO implement loading screen here?
-				# Add names directly?
-				pass
-			self.lobby_layout = self.create_lobby_layout(self.client.nickname, self.client.lobby_id)
+			self.lobby_layout = self.create_lobby_layout()
 			self.layout().addWidget(self.lobby_layout)
 			self.layout().setCurrentIndex(2)
 			self.name_allowed_label.setText("")

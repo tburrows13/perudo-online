@@ -10,6 +10,8 @@ class Client(QThread):
 	# Define signals
 	connection_made = pyqtSignal(bool)
 	name_allowed = pyqtSignal(bool)
+	lobby_joined = pyqtSignal(str, list)  # Lobby id, name list
+	lobby_update_info = pyqtSignal(int, list)  # Time left, name list
 
 	def __init__(self):
 		super(Client, self).__init__()
@@ -65,7 +67,7 @@ class Client(QThread):
 			joined, other_names, self.lobby_id = self.networker.check_join_lobby()
 			if joined:
 				joined_lobby = True
-
+		self.lobby_joined.emit(self.lobby_id, other_names)
 		self.display.join_lobby(other_names)
 		# We are now in a lobby, so we wait for the game to start
 		game_started = False
@@ -76,6 +78,8 @@ class Client(QThread):
 			if not self.starting_soon:
 				updated = self.lobby_update()
 				if updated:
+					print(f"Emitting values {self.time_to_start} {self.players}")
+					self.lobby_update_info.emit(self.time_to_start, self.players)
 					self.display.update_lobby(self.time_to_start, self.players, self.starting_soon)
 			else:
 				start_info = self.networker.game_start()

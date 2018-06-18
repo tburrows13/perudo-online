@@ -10,10 +10,13 @@ inner.setLayout(QVBoxLayout())
 
 scroll.setWidget(inner) # CRITICAL
 
-for i in range(40, 0, -1):
+for i in range(20):
     b = QPushButton(inner)
     b.setText(str(i))
     inner.layout().addWidget(b)
+
+inner.layout().removeWidget(b)
+b.close()
 
 scroll.show()
 app.exec_()
